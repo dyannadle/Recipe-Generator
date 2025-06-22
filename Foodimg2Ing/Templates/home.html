@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block home %}
+
+<div id="info" class="col-md-8" style="margin:auto">
+    <div class="card m-3" style="border-radius: 10px; border: none; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <img src="{{ url_for('static',filename='images/cover.jpg')}}" class="card-img-top" alt="..." style="border-top-left-radius: 10px; border-top-right-radius: 10px;">
+        <div class="card-body" style="background-color: #fff7e1;">
+            <h5 class="card-title text-center" id="infotitle" style="color: #ff6347; font-size: 1.8rem; font-weight: bold;">Recipe Generation from Food Image</h5>
+            <br>
+            <p class="card-text" id="infobody" style="font-size: 1.1rem; color: #6a4e23;">Upload any food image and our model will predict its food name, ingredients, and recipe.</p>
+            <p class="card-text" style="font-size: 0.9rem;"><small class="text-muted">Processing time: Approx 40s</small></p>
+        </div>
+    </div>
+</div>
+
+<div id="loading" style="display:none;" class="col-md-8" style="background-color: #ff6347; color: white;">
+    <div class="loader" style="text-align: center; padding: 20px;">
+        <div class="inner one" style="background-color: #ff6347;"></div>
+        <div class="inner two" style="background-color: #ff8c00;"></div>
+        <div class="inner three" style="background-color: #ffb84d;"></div>
+        <h4 style="color: #ff6347;">Loading</h4>
+        <h5 style="color: #6a4e23;">Kindly wait for a few seconds</h5>
+    </div>
+</div>
+{% endblock home %}
