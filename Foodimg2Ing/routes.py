@@ -1,29 +1,51 @@
-from flask import render_template ,url_for,flash,redirect,request
+from flask import jsonify, request
 from Foodimg2Ing import app
 from Foodimg2Ing.output import output
 import os
 
-
-@app.route('/',methods=['GET'])
+@app.route('/', methods=['GET'])
 def home():
-    return render_template('home.html')
+    return jsonify({"status": "active", "message": "Recipe Generator API is running"})
 
-@app.route('/about',methods=['GET'])
-def about():
-    return render_template('about.html')
-
-@app.route('/',methods=['POST','GET'])
+@app.route('/predict', methods=['POST'])
 def predict():
-    imagefile=request.files['imagefile']
-    image_path=os.path.join(app.root_path,'static\\demo_imgs',imagefile.filename)
-    imagefile.save(image_path)
-    img="/images/demo_imgs/"+imagefile.filename
-    title,ingredients,recipe = output(image_path)
-    return render_template('predict.html',title=title,ingredients=ingredients,recipe=recipe,img=img)
+    if 'imagefile' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+        
+    imagefile = request.files['imagefile']
+    if imagefile.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
 
+    try:
+        # Ensure demo_imgs directory exists
+        upload_dir = os.path.join(app.root_path, 'static', 'demo_imgs')
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+            
+        image_path = os.path.join(upload_dir, imagefile.filename)
+        imagefile.save(image_path)
+        
+        title, ingredients, recipe = output(image_path)
+        
+        return jsonify({
+            'title': title,
+            'ingredients': ingredients,
+            'recipe': recipe
+        })
+    except Exception as e:
+        print(f"Error processing image: {e}")
+        return jsonify({'error': str(e)}), 500
+
+# Legacy route support if needed, or remove
 @app.route('/<samplefoodname>')
 def predictsample(samplefoodname):
-    imagefile=os.path.join(app.root_path,'static\\images',str(samplefoodname)+".jpg")
-    img="/images/"+str(samplefoodname)+".jpg"
-    title,ingredients,recipe = output(imagefile)
-    return render_template('predict.html',title=title,ingredients=ingredients,recipe=recipe,img=img)
+    try:
+        image_path = os.path.join(app.root_path, 'static', 'images', str(samplefoodname) + ".jpg")
+        title, ingredients, recipe = output(image_path)
+        return jsonify({
+            'title': title,
+            'ingredients': ingredients,
+            'recipe': recipe
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
