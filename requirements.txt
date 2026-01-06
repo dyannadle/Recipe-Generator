@@ -34,8 +34,6 @@ werkzeug==2.2.2
 # F:\PROJECTS\Flask Projects\Recipe Generation from Food Image\Foodimg2Ing\output.py: 3
 # matplotlib == 3.2.2
 
-# F:\PROJECTS\Flask Projects\Recipe Generation from Food Image\Foodimg2Ing\output.py: 15
-# tensorflow == 2.5.0
 
 
 # F:\PROJECTS\Flask Projects\Recipe Generation from Food Image\Foodimg2Ing\model.py: 6
