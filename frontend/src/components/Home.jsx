@@ -31,20 +31,16 @@ const Home = ({ scrollToUpload, uploadSectionRef }) => {
 
             const data = response.data;
 
-            // The backend returns lists for multiple generations, we'll take the first one or valid one
-            let title = Array.isArray(data.title) ? data.title[0] : data.title;
-            let ingredients = Array.isArray(data.ingredients) ? data.ingredients[0] : data.ingredients;
-            let recipe = Array.isArray(data.recipe) ? data.recipe[0] : data.recipe;
-
-            if (title === "Not a valid recipe!") {
+            // The backend returns lists for multiple generations
+            if (Array.isArray(data.title) && data.title[0] === "Not a valid recipe!") {
                 setError("Could not identify a valid recipe from this image. Please try another one.");
-            } else if (title === "Not a valid food image!") {
+            } else if (Array.isArray(data.title) && data.title[0] === "Not a valid food image!") {
                 setError("Our AI detected that this image is likely not food. Please upload a clear photo of food.");
             } else {
                 setResult({
-                    title,
-                    ingredients,
-                    recipe
+                    title: data.title,
+                    ingredients: data.ingredients,
+                    recipe: data.recipe
                 });
             }
 

@@ -68,9 +68,9 @@ def output(uploadedfile):
                                                 (0.229, 0.224, 0.225)))
     to_input_transf = transforms.Compose(transf_list_batch)
 
-    greedy = [True, False]
-    beam = [-1, -1]
-    temperature = 1.0
+    greedy = [True, False, False]
+    beam = [-1, -1, -1]
+    temperature = [1.0, 0.8, 1.2] # Standard, Conservative, Creative
     numgens = len(greedy)
 
     uploaded_file=uploadedfile
@@ -114,7 +114,7 @@ def output(uploadedfile):
     for i in range(numgens):
         with torch.no_grad():
             outputs = model.sample(image_tensor, greedy=greedy[i], 
-                                temperature=temperature, beam=beam[i], true_ingrs=None)
+                                temperature=temperature[i], beam=beam[i], true_ingrs=None)
                 
         ingr_ids = outputs['ingr_ids'].cpu().numpy()
         recipe_ids = outputs['recipe_ids'].cpu().numpy()
