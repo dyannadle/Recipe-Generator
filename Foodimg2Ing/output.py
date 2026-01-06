@@ -105,7 +105,22 @@ def output(uploadedfile):
         if food_prob_mass < 0.15:
              print("REJECTED: Not food.")
              return ["Not a valid food image!"], ["Please upload a clear image of food."], ["Our AI detected non-food content (Class ID: {}, Confidence: {:.2f}).".format(cat_id, food_prob_mass)]
+             
+
     # ------------------
+
+    # Sub-recipe tips dictionary
+    sub_recipe_tips = {
+        "burger": "Pro Tip: For a juicy patty, mix ground meat with salt, pepper, and a dash of Worcestershire sauce. Form gently and indent the center to prevent bulging.",
+        "sandwich": "Pro Tip: Toasting the bread and applying a thin layer of mayo or butter creates a moisture barrier to prevent sogginess.",
+        "pizza": "Pro Tip: For the best dough, let it rest in the fridge overnight. Stretch it by hand instead of rolling to keep air bubbles.",
+        "pasta": "Pro Tip: Save some pasta water before draining! Use it to emulsify the sauce for a silky texture.",
+        "salad": "Pro Tip: Only dress the salad right before serving to keep the leaves crisp and fresh.",
+        "cake": "Pro Tip: Let the cake layers cool completely before frosting to prevent the frosting from melting.",
+        "soup": "Pro Tip: Sauté the aromatic vegetables (onions, carrots, celery) first to build a deep flavor base.",
+        "pie": "Pro Tip: Keep your butter and water ice-cold when making the crust for maximum flakiness.",
+        "curry": "Pro Tip: Toast your spices in oil before adding liquids to release their essential oils and enhance flavor."
+    }
 
     num_valid = 1
     title=[]
@@ -113,8 +128,10 @@ def output(uploadedfile):
     recipe=[]
     for i in range(numgens):
         with torch.no_grad():
+            # Explicitly cast temperature to float to avoid PyTorch errors
+            current_temp = float(temperature[i])
             outputs = model.sample(image_tensor, greedy=greedy[i], 
-                                temperature=temperature[i], beam=beam[i], true_ingrs=None)
+                                temperature=current_temp, beam=beam[i], true_ingrs=None)
                 
         ingr_ids = outputs['ingr_ids'].cpu().numpy()
         recipe_ids = outputs['recipe_ids'].cpu().numpy()
@@ -122,13 +139,22 @@ def output(uploadedfile):
         outs, valid = prepare_output(recipe_ids[0], ingr_ids[0], ingrs_vocab, vocab)
             
         if valid['is_valid'] or show_anyways:
-                
-            title.append(outs['title'])
+            gen_title = outs['title']
+            gen_recipe = outs['recipe']
 
-            ingredients.append(outs['ingrs'])
-
-            recipe.append(outs['recipe'])
+            # Check for sub-recipe tips
+            title_lower = gen_title.lower()
+            for key, tip in sub_recipe_tips.items():
+                if key in title_lower:
+                    gen_recipe.append(tip)
+                    break # Add only one tip
             
+            # Universal Tip
+            gen_recipe.append("General: Ensure all fresh ingredients are washed and prepped before starting.")
+
+            title.append(gen_title)
+            ingredients.append(outs['ingrs'])
+            recipe.append(gen_recipe)
 
         else:
             title.append("Not a valid recipe!")

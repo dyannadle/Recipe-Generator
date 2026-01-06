@@ -48,3 +48,5 @@ if 958 in final_food_indices: final_food_indices.remove(958)
 
 def is_food_index(idx):
     return idx in final_food_indices
+
+
