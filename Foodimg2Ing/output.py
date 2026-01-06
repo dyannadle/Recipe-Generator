@@ -11,6 +11,15 @@ from Foodimg2Ing.utils.output_utils import prepare_output
 from PIL import Image
 import time
 from Foodimg2Ing import app
+from torchvision.models import resnet50, ResNet50_Weights
+from Foodimg2Ing.utils.food_classes import final_food_indices
+
+# Initialize Food Classifier (Global to load only once)
+print("Loading food classifier...")
+food_classifier = resnet50(weights=ResNet50_Weights.DEFAULT)
+food_classifier.to(torch.device('cuda' if torch.cuda.is_available() else 'cpu'))
+food_classifier.eval()
+print("Food classifier loaded.")
 
 
 def output(uploadedfile):
@@ -76,6 +85,18 @@ def output(uploadedfile):
     
     image_transf = transform(img)
     image_tensor = to_input_transf(image_transf).unsqueeze(0).to(device)
+
+    # --- Food Check ---
+    with torch.no_grad():
+        food_output = food_classifier(image_tensor)
+        probabilities = torch.nn.functional.softmax(food_output[0], dim=0)
+        top_prob, top_catid = torch.topk(probabilities, 1)
+        
+        # Check if predicted category is in our food list
+        cat_id = top_catid.item()
+        if cat_id not in final_food_indices:
+             return ["Not a valid food image!"], ["Please upload a clear image of food."], ["Our AI detected non-food content (Class ID: {}).".format(cat_id)]
+    # ------------------
 
     num_valid = 1
     title=[]

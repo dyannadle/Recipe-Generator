@@ -48,6 +48,8 @@ function App() {
 
       if (title === "Not a valid recipe!") {
         setError("Could not identify a valid recipe from this image. Please try another one.");
+      } else if (title === "Not a valid food image!") {
+        setError("Our AI detected that this image is likely not food. Please upload a clear photo of food.");
       } else {
         setResult({
           title,
