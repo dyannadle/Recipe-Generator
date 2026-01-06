@@ -90,12 +90,21 @@ def output(uploadedfile):
     with torch.no_grad():
         food_output = food_classifier(image_tensor)
         probabilities = torch.nn.functional.softmax(food_output[0], dim=0)
-        top_prob, top_catid = torch.topk(probabilities, 1)
         
-        # Check if predicted category is in our food list
+        # Calculate total probability of it being food
+        food_prob_mass = sum(probabilities[i] for i in final_food_indices)
+        
+        # Get top prediction for logging/debugging
+        top_prob, top_catid = torch.topk(probabilities, 1)
         cat_id = top_catid.item()
-        if cat_id not in final_food_indices:
-             return ["Not a valid food image!"], ["Please upload a clear image of food."], ["Our AI detected non-food content (Class ID: {}).".format(cat_id)]
+        
+        print(f"DEBUG: Top Class: {cat_id}, Prob: {top_prob.item():.4f}, Total Food Prob: {food_prob_mass:.4f}")
+
+        # Threshold: if less than 15% probability mass is on 'food' classes, reject it.
+        # This allows for some uncertainty but rejects clear non-food.
+        if food_prob_mass < 0.15:
+             print("REJECTED: Not food.")
+             return ["Not a valid food image!"], ["Please upload a clear image of food."], ["Our AI detected non-food content (Class ID: {}, Confidence: {:.2f}).".format(cat_id, food_prob_mass)]
     # ------------------
 
     num_valid = 1

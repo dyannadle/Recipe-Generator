@@ -40,7 +40,11 @@ SPECIFIC_FOOD_INDICES = [
 # 723: 'pinwheel'
 # 440-450?
 
-final_food_indices = list(range(923, 970)) # 923 to 969 inclusive
+final_food_indices = list(range(924, 969 + 1)) # Exclude 923 (plate)
+# Remove specific non-food items within this range if necessary
+# 968 is cup, 958 is hay.
+if 968 in final_food_indices: final_food_indices.remove(968)
+if 958 in final_food_indices: final_food_indices.remove(958)
 
 def is_food_index(idx):
     return idx in final_food_indices
