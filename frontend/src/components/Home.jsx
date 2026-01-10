@@ -1,18 +1,43 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';
 import Hero from './Hero';
 import ImageUpload from './ImageUpload';
 import RecipeCard from './RecipeCard';
+import History from './History';
 
 const Home = ({ scrollToUpload, uploadSectionRef }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [result, setResult] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
-    const [error, setError] = useState(null);
+    const [history, setHistory] = useState([]);
+
+    // Load history from localStorage
+    useEffect(() => {
+        const savedHistory = localStorage.getItem('recipeHistory');
+        if (savedHistory) {
+            try {
+                setHistory(JSON.parse(savedHistory));
+            } catch (e) {
+                console.error("Failed to parse history", e);
+            }
+        }
+    }, []);
+
+    const saveToHistory = (data, image) => {
+        const newEntry = {
+            ...data,
+            imagePreview: image,
+            timestamp: new Date().toISOString()
+        };
+
+        const updatedHistory = [newEntry, ...history].slice(0, 6); // Keep last 6
+        setHistory(updatedHistory);
+        localStorage.setItem('recipeHistory', JSON.stringify(updatedHistory));
+    };
 
     const handleUpload = async (file) => {
         setIsLoading(true);
-        setError(null);
         setResult(null);
 
         // Create image preview
@@ -33,23 +58,32 @@ const Home = ({ scrollToUpload, uploadSectionRef }) => {
 
             // The backend returns lists for multiple generations
             if (Array.isArray(data.title) && data.title[0] === "Not a valid recipe!") {
-                setError("Could not identify a valid recipe from this image. Please try another one.");
+                toast.error("Could not identify a valid recipe from this image.");
             } else if (Array.isArray(data.title) && data.title[0] === "Not a valid food image!") {
-                setError("Our AI detected that this image is likely not food. Please upload a clear photo of food.");
+                toast.error("This doesn't look like food! Please try a clear food photo.");
             } else {
-                setResult({
+                const resultData = {
                     title: data.title,
                     ingredients: data.ingredients,
                     recipe: data.recipe
-                });
+                };
+                setResult(resultData);
+                saveToHistory(resultData, objectUrl);
+                toast.success("Recipe generated successfully!");
             }
 
         } catch (err) {
             console.error(err);
-            setError("Failed to connect to the server. Please ensure the backend is running.");
+            toast.error(err.response?.data?.error || "Failed to connect to the server.");
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleSelectHistory = (item) => {
+        setResult(item);
+        setImagePreview(item.imagePreview);
+        window.scrollTo({ top: uploadSectionRef.current.offsetTop, behavior: 'smooth' });
     };
 
     return (
@@ -60,25 +94,15 @@ const Home = ({ scrollToUpload, uploadSectionRef }) => {
                 <ImageUpload onUpload={handleUpload} isLoading={isLoading} />
             </div>
 
-            {error && (
-                <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="bg-red-50 border-l-4 border-red-500 p-4">
-                        <div className="flex">
-                            <div className="ml-3">
-                                <p className="text-sm text-red-700">{error}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {result && (
+            {result ? (
                 <RecipeCard
                     title={result.title}
                     ingredients={result.ingredients}
                     recipe={result.recipe}
                     imagePreview={imagePreview}
                 />
+            ) : (
+                <History history={history} onSelectRecipe={handleSelectHistory} />
             )}
         </>
     );

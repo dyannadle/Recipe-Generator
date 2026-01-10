@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Printer } from 'lucide-react';
 
 const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview }) => {
     const [activeTab, setActiveTab] = useState(0);
@@ -13,24 +14,28 @@ const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview }) => {
     const currentIngredients = ingredientLists[activeTab] || ingredientLists[0];
     const currentRecipe = recipeLists[activeTab] || recipeLists[0];
 
+    const handlePrint = () => {
+        window.print();
+    };
+
     return (
         <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+            className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 print:p-0 print:max-w-none"
         >
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 print:shadow-none print:border-none">
 
                 {/* Tabs for Variations */}
                 {titles.length > 1 && (
-                    <div className="flex border-b border-gray-200 bg-gray-50/50">
+                    <div className="flex border-b border-gray-200 bg-gray-50/50 print:hidden">
                         {titles.map((_, idx) => (
                             <button
                                 key={idx}
                                 onClick={() => setActiveTab(idx)}
                                 className={`flex-1 py-4 text-sm font-medium transition-all duration-200 border-b-2 ${activeTab === idx
-                                        ? 'border-primary text-primary bg-white shadow-xs'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                                    ? 'border-primary text-primary bg-white shadow-xs'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                                     }`}
                             >
                                 Variation {idx + 1}
@@ -40,7 +45,7 @@ const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview }) => {
                 )}
 
                 <div className="md:flex">
-                    <div className="md:w-1/2 relative h-64 md:h-auto">
+                    <div className="md:w-1/2 relative h-64 md:h-auto print:hidden">
                         {imagePreview && (
                             <img
                                 src={imagePreview}
@@ -53,21 +58,30 @@ const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview }) => {
                         </div>
                     </div>
 
-                    <div className="p-8 md:w-1/2">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-6 hidden md:block">{currentTitle}</h2>
+                    <div className="p-8 md:w-1/2 print:w-full">
+                        <div className="flex justify-between items-start mb-6">
+                            <h2 className="text-3xl font-bold text-gray-900 hidden md:block print:block">{currentTitle}</h2>
+                            <button
+                                onClick={handlePrint}
+                                className="p-2 text-gray-400 hover:text-primary transition-colors print:hidden"
+                                title="Print Recipe"
+                            >
+                                <Printer size={24} />
+                            </button>
+                        </div>
 
                         <div className="mb-8">
                             <h3 className="text-lg font-semibold text-primary mb-3 flex items-center">
-                                <span className="bg-primary/10 p-2 rounded-lg mr-2">🥕</span>
+                                <span className="bg-primary/10 p-2 rounded-lg mr-2 print:border print:border-gray-200">🥕</span>
                                 Ingredients
                             </h3>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2 print:block">
                                 {currentIngredients && currentIngredients.map((ing, idx) => (
                                     <span
                                         key={idx}
-                                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary/10 text-teal-700"
+                                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-secondary/10 text-teal-700 print:bg-transparent print:text-black print:px-0 print:mr-4 print:inline-block"
                                     >
-                                        {ing}
+                                        • {ing}
                                     </span>
                                 ))}
                             </div>
@@ -75,22 +89,27 @@ const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview }) => {
 
                         <div>
                             <h3 className="text-lg font-semibold text-primary mb-3 flex items-center">
-                                <span className="bg-primary/10 p-2 rounded-lg mr-2">📝</span>
+                                <span className="bg-primary/10 p-2 rounded-lg mr-2 print:border print:border-gray-200">📝</span>
                                 Instructions
                             </h3>
                             <ul className="space-y-3">
                                 {currentRecipe && currentRecipe.map((step, idx) => (
                                     <li key={idx} className="flex items-start">
-                                        <span className="flex-shrink-0 h-6 w-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">
+                                        <span className="flex-shrink-0 h-6 w-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold mr-3 mt-0.5 print:border print:border-gray-200">
                                             {idx + 1}
                                         </span>
-                                        <span className="text-gray-600 text-sm leading-relaxed">{step}</span>
+                                        <span className="text-gray-600 text-sm leading-relaxed print:text-black">{step}</span>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Print-only footer */}
+            <div className="hidden print:block text-center mt-8 text-sm text-gray-500">
+                Generated by SnapCook AI
             </div>
         </motion.div>
     );

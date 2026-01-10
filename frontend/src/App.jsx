@@ -4,6 +4,8 @@ import Navbar from './components/Navbar';
 import Home from './components/Home';
 import About from './components/About';
 
+import { Toaster } from 'react-hot-toast';
+
 function App() {
   const uploadSectionRef = useRef(null);
 
@@ -14,6 +16,7 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Toaster position="top-center" />
         <Navbar />
         <div className="flex-grow">
           <Routes>

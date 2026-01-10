@@ -16,6 +16,7 @@ def predict():
     if imagefile.filename == '':
         return jsonify({'error': 'No selected file'}), 400
 
+    image_path = None
     try:
         # Ensure demo_imgs directory exists
         upload_dir = os.path.join(app.root_path, 'static', 'demo_imgs')
@@ -35,6 +36,13 @@ def predict():
     except Exception as e:
         print(f"Error processing image: {e}")
         return jsonify({'error': str(e)}), 500
+    finally:
+        # Clean up the uploaded file to save space
+        if image_path and os.path.exists(image_path):
+            try:
+                os.remove(image_path)
+            except Exception as e:
+                print(f"Error removing temporary file: {e}")
 
 # Legacy route support if needed, or remove
 @app.route('/<samplefoodname>')
