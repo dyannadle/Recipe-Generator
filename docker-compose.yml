@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  recipe-app:
+    build: .
+    ports:
+      - "8000:7860"
+    volumes:
+      - ./Foodimg2Ing/data:/app/Foodimg2Ing/data
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
