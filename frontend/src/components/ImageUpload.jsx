@@ -1,13 +1,16 @@
-import React, { useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion } from 'framer-motion';
 
 const ImageUpload = ({ onUpload, isLoading }) => {
+    const [title, setTitle] = useState('');
+    const [ingredients, setIngredients] = useState('');
+
     const onDrop = useCallback(acceptedFiles => {
         if (acceptedFiles.length > 0) {
-            onUpload(acceptedFiles[0]);
+            onUpload(acceptedFiles[0], { title, ingredients });
         }
-    }, [onUpload]);
+    }, [onUpload, title, ingredients]);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
@@ -26,12 +29,45 @@ const ImageUpload = ({ onUpload, isLoading }) => {
             className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-12"
             id="upload-section"
         >
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Recipe Name (Optional)
+                        </label>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="e.g. Grandma's Apple Pie"
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            disabled={isLoading}
+                        />
+                        <p className="text-xs text-gray-400 mt-1">If set, this will override the AI-detected name.</p>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Hidden Ingredients (Optional)
+                        </label>
+                        <input
+                            type="text"
+                            value={ingredients}
+                            onChange={(e) => setIngredients(e.target.value)}
+                            placeholder="e.g. salt, love, secret sauce"
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            disabled={isLoading}
+                        />
+                        <p className="text-xs text-gray-400 mt-1">These will be added to the ingredients list.</p>
+                    </div>
+                </div>
+            </div>
+
             <div
                 {...getRootProps()}
-                className={`relative border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all duration-300 ease-in-out
+                className={`relative border - 2 border - dashed rounded - xl p - 12 text - center cursor - pointer transition - all duration - 300 ease -in -out
           ${isDragActive ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-primary hover:bg-gray-50'}
           ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-        `}
+`}
             >
                 <input {...getInputProps()} />
 

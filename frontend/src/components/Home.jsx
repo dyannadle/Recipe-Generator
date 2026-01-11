@@ -36,7 +36,7 @@ const Home = ({ scrollToUpload, uploadSectionRef }) => {
         localStorage.setItem('recipeHistory', JSON.stringify(updatedHistory));
     };
 
-    const handleUpload = async (file) => {
+    const handleUpload = async (file, metaData = {}) => {
         setIsLoading(true);
         setResult(null);
 
@@ -46,6 +46,8 @@ const Home = ({ scrollToUpload, uploadSectionRef }) => {
 
         const formData = new FormData();
         formData.append('imagefile', file);
+        if (metaData.title) formData.append('title', metaData.title);
+        if (metaData.ingredients) formData.append('ingredients', metaData.ingredients);
 
         try {
             const response = await axios.post('http://127.0.0.1:5000/predict', formData, {
@@ -88,9 +90,11 @@ const Home = ({ scrollToUpload, uploadSectionRef }) => {
 
     return (
         <>
-            <Hero scrollToUpload={scrollToUpload} />
+            <div className="print:hidden">
+                <Hero scrollToUpload={scrollToUpload} />
+            </div>
 
-            <div ref={uploadSectionRef} className="pt-10">
+            <div ref={uploadSectionRef} className="pt-10 print:hidden">
                 <ImageUpload onUpload={handleUpload} isLoading={isLoading} />
             </div>
 
@@ -100,6 +104,7 @@ const Home = ({ scrollToUpload, uploadSectionRef }) => {
                     ingredients={result.ingredients}
                     recipe={result.recipe}
                     imagePreview={imagePreview}
+                    onBack={() => setResult(null)}
                 />
             ) : (
                 <History history={history} onSelectRecipe={handleSelectHistory} />

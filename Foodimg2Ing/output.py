@@ -22,7 +22,7 @@ food_classifier.eval()
 print("Food classifier loaded.")
 
 
-def output(uploadedfile):
+def output(uploadedfile, user_title=None, user_ingredients=None):
 
     # Keep all the codes and pre-trained weights in data directory
     data_dir=os.path.join(app.root_path,'data')
@@ -152,8 +152,21 @@ def output(uploadedfile):
             # Universal Tip
             gen_recipe.append("General: Ensure all fresh ingredients are washed and prepped before starting.")
 
-            title.append(gen_title)
-            ingredients.append(outs['ingrs'])
+            # --- User Input Enhancements ---
+            display_title = user_title if user_title else gen_title
+            
+            display_ingrs = outs['ingrs']
+            if user_ingredients:
+                # Add user ingredients if they exist
+                # Expecting user_ingredients to be a comma separated string or list
+                if isinstance(user_ingredients, str):
+                    extras = [x.strip() for x in user_ingredients.split(',') if x.strip()]
+                    display_ingrs.extend(extras)
+                    # Filter unique
+                    display_ingrs = list(dict.fromkeys(display_ingrs))
+            
+            title.append(display_title)
+            ingredients.append(display_ingrs)
             recipe.append(gen_recipe)
 
         else:

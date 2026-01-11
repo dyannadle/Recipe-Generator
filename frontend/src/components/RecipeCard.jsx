@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Printer } from 'lucide-react';
+import { Printer, ArrowLeft } from 'lucide-react';
 
-const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview }) => {
+const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview, onBack }) => {
     const [activeTab, setActiveTab] = useState(0);
 
     // Ensure we have arrays
@@ -44,30 +44,41 @@ const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview }) => {
                     </div>
                 )}
 
-                <div className="md:flex">
-                    <div className="md:w-1/2 relative h-64 md:h-auto print:hidden">
+                <div className="md:flex print:block">
+                    <div className="md:w-1/2 relative h-64 md:h-auto print:w-full print:h-80 print:mb-6">
                         {imagePreview && (
                             <img
                                 src={imagePreview}
                                 alt="Food"
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none print:rounded-2xl"
                             />
                         )}
-                        <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent md:bg-linear-to-r md:from-transparent md:to-transparent flex items-end p-6">
+                        <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent md:bg-linear-to-r md:from-transparent md:to-transparent flex items-end p-6 print:hidden">
                             <h2 className="text-white text-2xl font-bold md:hidden">{currentTitle}</h2>
                         </div>
                     </div>
 
-                    <div className="p-8 md:w-1/2 print:w-full">
+                    <div className="p-8 md:w-1/2 print:w-full print:p-0">
                         <div className="flex justify-between items-start mb-6">
                             <h2 className="text-3xl font-bold text-gray-900 hidden md:block print:block">{currentTitle}</h2>
-                            <button
-                                onClick={handlePrint}
-                                className="p-2 text-gray-400 hover:text-primary transition-colors print:hidden"
-                                title="Print Recipe"
-                            >
-                                <Printer size={24} />
-                            </button>
+                            <div className="flex space-x-2 print:hidden">
+                                {onBack && (
+                                    <button
+                                        onClick={onBack}
+                                        className="p-2 text-gray-400 hover:text-primary transition-colors"
+                                        title="Back to Upload"
+                                    >
+                                        <ArrowLeft size={24} />
+                                    </button>
+                                )}
+                                <button
+                                    onClick={handlePrint}
+                                    className="p-2 text-gray-400 hover:text-primary transition-colors"
+                                    title="Print Recipe"
+                                >
+                                    <Printer size={24} />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="mb-8">

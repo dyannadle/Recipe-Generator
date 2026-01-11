@@ -26,7 +26,10 @@ def predict():
         image_path = os.path.join(upload_dir, imagefile.filename)
         imagefile.save(image_path)
         
-        title, ingredients, recipe = output(image_path)
+        user_title = request.form.get('title')
+        user_ingredients = request.form.get('ingredients')
+
+        title, ingredients, recipe = output(image_path, user_title, user_ingredients)
         
         return jsonify({
             'title': title,
