@@ -68,6 +68,7 @@ const Home = ({ scrollToUpload, uploadSectionRef }) => {
                     title: data.title,
                     ingredients: data.ingredients,
                     recipe: data.recipe,
+                    styles: data.styles,
                     imageUrl: data.image_url // Store the persistent URL
                 };
                 setResult(resultData);
@@ -105,6 +106,7 @@ const Home = ({ scrollToUpload, uploadSectionRef }) => {
                     title={result.title}
                     ingredients={result.ingredients}
                     recipe={result.recipe}
+                    styles={result.styles}
                     imagePreview={imagePreview}
                     onBack={() => setResult(null)}
                 />

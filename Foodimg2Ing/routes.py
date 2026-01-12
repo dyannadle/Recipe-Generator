@@ -34,7 +34,7 @@ def predict():
         user_title = request.form.get('title')
         user_ingredients = request.form.get('ingredients')
 
-        title, ingredients, recipe = output(image_path, user_title, user_ingredients)
+        title, ingredients, recipe, styles = output(image_path, user_title, user_ingredients)
         
         # Construct URL for the image
         # Assuming server runs on localhost:5000 for local dev
@@ -44,6 +44,7 @@ def predict():
             'title': title,
             'ingredients': ingredients,
             'recipe': recipe,
+            'styles': styles,
             'image_url': image_url 
         })
     except Exception as e:

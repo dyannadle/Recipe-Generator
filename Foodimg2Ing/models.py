@@ -25,6 +25,7 @@ class User(UserMixin, db.Model):
     recipes = db.relationship('Recipe', backref='user', lazy=True, cascade='all, delete-orphan')
     ratings = db.relationship('Rating', backref='user', lazy=True, cascade='all, delete-orphan')
     favorites = db.relationship('Favorite', backref='user', lazy=True, cascade='all, delete-orphan')
+    shopping_list = db.relationship('ShoppingItem', backref='user', lazy=True, cascade='all, delete-orphan')
     
     def set_password(self, password):
         """Hash and set password"""
@@ -142,4 +143,22 @@ class Favorite(db.Model):
             'recipe_id': self.recipe_id,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'recipe': self.recipe.to_dict() if self.recipe else None
+        }
+
+
+class ShoppingItem(db.Model):
+    __tablename__ = 'shopping_items'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, index=True)
+    item = db.Column(db.String(255), nullable=False)
+    is_checked = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'item': self.item,
+            'is_checked': self.is_checked,
+            'created_at': self.created_at.isoformat() if self.created_at else None
         }

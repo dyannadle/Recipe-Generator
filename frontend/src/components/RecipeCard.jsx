@@ -4,7 +4,7 @@ import { Printer, ArrowLeft, Share2, Copy, Check } from 'lucide-react';
 import SaveRecipeButton from './SaveRecipeButton';
 import StarRating from './StarRating';
 
-const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview, onBack }) => {
+const RecipeCard = ({ title, ingredients = [], recipe = [], styles = [], imagePreview, onBack }) => {
     const [activeTab, setActiveTab] = useState(0);
     const [showShareMenu, setShowShareMenu] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -18,11 +18,14 @@ const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview, onBack
     const currentIngredients = ingredientLists[activeTab] || ingredientLists[0];
     const currentRecipe = recipeLists[activeTab] || recipeLists[0];
 
+    // ... (rest of methods)
+
     const handlePrint = () => {
         window.print();
     };
 
     const handleShare = async (platform) => {
+        // ... (keep handleShare as is)
         const shareText = `Check out this recipe: ${currentTitle}`;
         const shareUrl = window.location.href;
 
@@ -79,7 +82,7 @@ const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview, onBack
                                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                                     }`}
                             >
-                                Variation {idx + 1}
+                                {styles[idx] || `Variation ${idx + 1}`}
                             </button>
                         ))}
                     </div>

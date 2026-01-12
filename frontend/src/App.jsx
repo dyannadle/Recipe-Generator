@@ -5,6 +5,7 @@ import Home from './components/Home';
 import About from './components/About';
 import Dashboard from './components/Dashboard/Dashboard';
 import RecipeDetail from './components/RecipeDetail';
+import ShoppingList from './components/ShoppingList';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -37,6 +38,7 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/recipe/:id" element={<RecipeDetail />} />
+                <Route path="/shopping-list" element={<ShoppingList />} />
               </Routes>
             </div>
 

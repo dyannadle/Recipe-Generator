@@ -71,6 +71,7 @@ def output(uploadedfile, user_title=None, user_ingredients=None):
     greedy = [True, False, False]
     beam = [-1, -1, -1]
     temperature = [1.0, 0.8, 1.2] # Standard, Conservative, Creative
+    styles = ["Best Match", "Classic", "Creative"]
     numgens = len(greedy)
 
     uploaded_file=uploadedfile
@@ -153,7 +154,10 @@ def output(uploadedfile, user_title=None, user_ingredients=None):
             gen_recipe.append("General: Ensure all fresh ingredients are washed and prepped before starting.")
 
             # --- User Input Enhancements ---
-            display_title = user_title if user_title else gen_title
+            if user_title:
+                display_title = f"{user_title} ({styles[i]})"
+            else:
+                display_title = gen_title
             
             display_ingrs = outs['ingrs']
             if user_ingredients:
@@ -169,8 +173,8 @@ def output(uploadedfile, user_title=None, user_ingredients=None):
             ingredients.append(display_ingrs)
             recipe.append(gen_recipe)
 
-        else:
             title.append("Not a valid recipe!")
             recipe.append("Reason: "+valid['reason'])
             
-    return title,ingredients,recipe
+    styles = ["Best Match", "Classic", "Creative"]
+    return title,ingredients,recipe,styles

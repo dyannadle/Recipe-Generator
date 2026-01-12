@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Clock, ChefHat, Heart, Share2, ArrowLeft, Printer } from 'lucide-react';
+import { Clock, ChefHat, Heart, Share2, ArrowLeft, Printer, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import StarRating from './StarRating';
+import NutritionLabel from './NutritionLabel';
+
 
 const RecipeDetail = () => {
     const { id } = useParams();
@@ -17,6 +19,7 @@ const RecipeDetail = () => {
     const [error, setError] = useState(null);
     const [isFavorited, setIsFavorited] = useState(false);
     const [userRating, setUserRating] = useState(0);
+    const [nutrition, setNutrition] = useState(null);
 
     // Fetch Recipe Data
     useEffect(() => {
@@ -25,6 +28,14 @@ const RecipeDetail = () => {
                 // 1. Get Recipe Details
                 const recipeRes = await axios.get(`http://127.0.0.1:5000/api/recipes/${id}`);
                 setRecipe(recipeRes.data.recipe);
+
+                // Fetch Nutrition
+                try {
+                    const nutRes = await axios.get(`http://127.0.0.1:5000/api/recipes/${id}/nutrition`);
+                    setNutrition(nutRes.data.nutrition);
+                } catch (e) {
+                    console.log('Nutrition not available');
+                }
 
                 // 2. If logged in, check if favorited and get user's rating
                 if (isAuthenticated) {
@@ -84,6 +95,16 @@ const RecipeDetail = () => {
             setRecipe(recipeRes.data.recipe);
         } catch (err) {
             toast.error('Failed to save rating');
+        }
+    };
+
+    const addToShoppingList = async () => {
+        if (!isAuthenticated) return toast.error('Please login');
+        try {
+            const res = await axios.post('http://127.0.0.1:5000/api/shopping-list/add-recipe', { recipe_id: id });
+            toast.success(res.data.message);
+        } catch (error) {
+            toast.error('Failed to add to shopping list');
         }
     };
 
@@ -160,8 +181,8 @@ const RecipeDetail = () => {
                             <button
                                 onClick={toggleFavorite}
                                 className={`p-2 rounded-full transition-all ${isFavorited
-                                        ? 'bg-red-50 text-red-500 dark:bg-red-900/20'
-                                        : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+                                    ? 'bg-red-50 text-red-500 dark:bg-red-900/20'
+                                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
                                     }`}
                                 title={isFavorited ? "Remove from favorites" : "Add to favorites"}
                             >
@@ -172,6 +193,13 @@ const RecipeDetail = () => {
                             </button>
                             <button className="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 transition-colors">
                                 <Printer size={20} />
+                            </button>
+                            <button
+                                onClick={addToShoppingList}
+                                className="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600 transition-colors"
+                                title="Add to Shopping List"
+                            >
+                                <ShoppingBag size={20} />
                             </button>
                         </div>
                     </div>
@@ -211,6 +239,13 @@ const RecipeDetail = () => {
                                     ))}
                                 </ul>
                             </section>
+
+                            {/* Nutrition Label */}
+                            {nutrition && (
+                                <section className="mt-8">
+                                    <NutritionLabel nutrition={nutrition} />
+                                </section>
+                            )}
                         </div>
 
                         {/* Right Column: Instructions */}

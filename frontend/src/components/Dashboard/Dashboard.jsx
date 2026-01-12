@@ -13,7 +13,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trash2, Clock, ChefHat, Heart } from 'lucide-react';
+import { Trash2, Clock, ChefHat, Heart, Search } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -29,6 +29,8 @@ const Dashboard = () => {
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [favoriteIds, setFavoriteIds] = useState(new Set()); // Track IDs of favorited recipes
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filterType, setFilterType] = useState('all');
 
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -158,8 +160,8 @@ const Dashboard = () => {
                 <button
                     onClick={(e) => toggleFavorite(recipe.id, e)}
                     className={`absolute top-3 right-3 z-10 p-2 rounded-full shadow-sm backdrop-blur-sm transition-all duration-200 ${isFavorited
-                            ? 'bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/80 dark:text-red-300'
-                            : 'bg-white/80 text-gray-400 hover:text-red-500 hover:bg-white dark:bg-black/50 dark:text-gray-300 dark:hover:text-red-400'
+                        ? 'bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/80 dark:text-red-300'
+                        : 'bg-white/80 text-gray-400 hover:text-red-500 hover:bg-white dark:bg-black/50 dark:text-gray-300 dark:hover:text-red-400'
                         }`}
                 >
                     <Heart size={18} fill={isFavorited ? "currentColor" : "none"} />
@@ -290,6 +292,29 @@ const Dashboard = () => {
                     </button>
                 </div>
 
+                {/* Search and Filters */}
+                <div className="flex flex-col md:flex-row gap-4 mb-8">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                        <input
+                            type="text"
+                            placeholder="Search recipes or ingredients..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-dark-surface dark:text-white"
+                        />
+                    </div>
+                    <select
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
+                        className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:bg-dark-surface dark:text-white"
+                    >
+                        <option value="all">All Visibility</option>
+                        <option value="public">Public</option>
+                        <option value="private">Private</option>
+                    </select>
+                </div>
+
                 {/* Content Area */}
                 {loading ? (
                     <div className="flex justify-center items-center py-20">
@@ -317,7 +342,28 @@ const Dashboard = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {recipes.map(recipe => renderRecipeCard(recipe))}
+                        {recipes.filter(recipe => {
+                            const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                (recipe.ingredients && recipe.ingredients.some(ing => ing.toLowerCase().includes(searchTerm.toLowerCase())));
+                            const matchesFilter = filterType === 'all'
+                                ? true
+                                : filterType === 'public' ? recipe.is_public : !recipe.is_public;
+                            return matchesSearch && matchesFilter;
+                        }).map(recipe => renderRecipeCard(recipe))}
+
+                        {/* Empty search state */}
+                        {recipes.length > 0 && recipes.filter(recipe => {
+                            const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                (recipe.ingredients && recipe.ingredients.some(ing => ing.toLowerCase().includes(searchTerm.toLowerCase())));
+                            const matchesFilter = filterType === 'all'
+                                ? true
+                                : filterType === 'public' ? recipe.is_public : !recipe.is_public;
+                            return matchesSearch && matchesFilter;
+                        }).length === 0 && (
+                                <div className="col-span-full text-center py-10 text-gray-500">
+                                    No recipes match your search.
+                                </div>
+                            )}
                     </div>
                 )}
             </div>

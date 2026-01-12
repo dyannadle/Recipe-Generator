@@ -62,3 +62,4 @@ from Foodimg2Ing import routes      # Main routes (predict, home)
 from Foodimg2Ing import auth        # Authentication routes
 from Foodimg2Ing import recipes     # Recipe management routes
 from Foodimg2Ing import ratings     # Rating system routes
+from Foodimg2Ing import shopping    # Shopping list routes

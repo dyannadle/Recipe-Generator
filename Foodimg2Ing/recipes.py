@@ -344,3 +344,60 @@ def get_favorites(user):
     except Exception as e:
         print(f"Error fetching favorites: {e}")
         return jsonify({'error': 'Failed to fetch favorites'}), 500
+
+# ============================================================================
+# GET RECIPE NUTRITION ENDPOINT
+# ============================================================================
+from Foodimg2Ing.nutrition import estimate_nutrition
+
+@app.route('/api/recipes/<int:recipe_id>/nutrition', methods=['GET'])
+@optional_token
+def get_recipe_nutrition(user, recipe_id):
+    """
+    Get nutritional information for a specific recipe
+    
+    How it works:
+    1. Find recipe by ID
+    2. Extract ingredients
+    3. Calculate nutrition using heuristic
+    4. Return nutrition data
+    """
+    
+    recipe = db.session.get(Recipe, recipe_id)
+    if not recipe:
+        return jsonify({'error': 'Recipe not found'}), 404
+        
+    # Check permissions (same as get_recipe)
+    is_owner = user and recipe.user_id == user.id
+    if not is_owner and not recipe.is_public:
+        return jsonify({'error': 'Access denied'}), 403
+        
+    try:
+        nutrition = estimate_nutrition(recipe.ingredients)
+        return jsonify({
+            'nutrition': nutrition
+        }), 200
+    except Exception as e:
+        print(f"Error calculating nutrition: {e}")
+        return jsonify({'error': 'Failed to calculate nutrition'}), 500
+
+@app.route('/api/nutrition/estimate', methods=['POST'])
+@optional_token
+def estimate_nutrition_adhoc(user):
+    """
+    Estimate nutrition for an arbitrary list of ingredients
+    Useful for unsaved generated recipes
+    """
+    data = request.get_json()
+    if not data or 'ingredients' not in data:
+        return jsonify({'error': 'Ingredients list required'}), 400
+        
+    try:
+        nutrition = estimate_nutrition(data['ingredients'])
+        return jsonify({
+            'nutrition': nutrition
+        }), 200
+    except Exception as e:
+        print(f"Error calculating nutrition: {e}")
+        return jsonify({'error': 'Failed to calculate nutrition'}), 500
+

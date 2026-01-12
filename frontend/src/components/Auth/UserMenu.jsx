@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, User, Settings, Heart, Utensils, Moon, Sun } from 'lucide-react'; // Added Utensils, Moon, Sun, kept Heart and Settings
+import { LogOut, User, Settings, Heart, Utensils, Moon, Sun, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext'; // New import
 import { Link, useNavigate } from 'react-router-dom'; // Added Link, kept useNavigate
@@ -93,10 +93,19 @@ const UserMenu = () => {
                                 <span>Favorites</span>
                             </button>
 
+                            <Link
+                                to="/shopping-list"
+                                onClick={() => setIsOpen(false)}
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
+                            >
+                                <ShoppingBag size={16} />
+                                <span>Shopping List</span>
+                            </Link>
+
                             <button
                                 onClick={() => {
                                     setIsOpen(false);
-                                    // TODO: Open preferences modal
+                                    setShowPreferences(true);
                                 }}
                                 className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
                             >
