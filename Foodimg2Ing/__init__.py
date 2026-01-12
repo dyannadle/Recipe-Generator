@@ -56,5 +56,9 @@ limiter = Limiter(
 # Response Compression
 compress = Compress(app)
 
-from Foodimg2Ing import routes
-from Foodimg2Ing import auth
+# Import routes - ORDER MATTERS!
+# These imports register the routes with the Flask app
+from Foodimg2Ing import routes      # Main routes (predict, home)
+from Foodimg2Ing import auth        # Authentication routes
+from Foodimg2Ing import recipes     # Recipe management routes
+from Foodimg2Ing import ratings     # Rating system routes

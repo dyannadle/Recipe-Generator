@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, LogOut, Settings, Heart } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const UserMenu = () => {
     const [isOpen, setIsOpen] = useState(false);
     const { user, logout } = useAuth();
+    const navigate = useNavigate();
 
     if (!user) return null;
 
@@ -52,7 +54,7 @@ const UserMenu = () => {
                             <button
                                 onClick={() => {
                                     setIsOpen(false);
-                                    // TODO: Navigate to dashboard
+                                    navigate('/dashboard');
                                 }}
                                 className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
                             >

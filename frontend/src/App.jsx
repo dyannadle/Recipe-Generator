@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import About from './components/About';
+import Dashboard from './components/Dashboard/Dashboard';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
 
@@ -31,6 +32,7 @@ function App() {
                 }
               />
               <Route path="/about" element={<About />} />
+              <Route path="/dashboard" element={<Dashboard />} />
             </Routes>
           </div>
 

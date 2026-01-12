@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Printer, ArrowLeft, Share2, Copy, Check } from 'lucide-react';
+import SaveRecipeButton from './SaveRecipeButton';
+import StarRating from './StarRating';
 
 const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview, onBack }) => {
     const [activeTab, setActiveTab] = useState(0);
@@ -100,7 +102,17 @@ const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview, onBack
                     <div className="p-8 md:w-1/2 print:w-full print:p-0">
                         <div className="flex justify-between items-start mb-6">
                             <h2 className="text-3xl font-bold text-gray-900 hidden md:block print:block">{currentTitle}</h2>
-                            <div className="flex space-x-2 print:hidden">
+                            <div className="flex flex-wrap gap-2 print:hidden">
+                                {/* Save Recipe Button */}
+                                <SaveRecipeButton
+                                    recipe={{
+                                        title: currentTitle,
+                                        ingredients: currentIngredients,
+                                        instructions: currentRecipe,
+                                        imageUrl: imagePreview
+                                    }}
+                                />
+
                                 {onBack && (
                                     <button
                                         onClick={onBack}
