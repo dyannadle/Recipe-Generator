@@ -1,26 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, LogOut, Settings, Heart } from 'lucide-react';
+import { LogOut, User, Settings, Heart, Utensils, Moon, Sun } from 'lucide-react'; // Added Utensils, Moon, Sun, kept Heart and Settings
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../../contexts/ThemeContext'; // New import
+import { Link, useNavigate } from 'react-router-dom'; // Added Link, kept useNavigate
+import PreferencesModal from './PreferencesModal'; // New import
 
 const UserMenu = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const [showPreferences, setShowPreferences] = useState(false); // New state
     const { user, logout } = useAuth();
-    const navigate = useNavigate();
+    const { theme, toggleTheme } = useTheme(); // New hook usage
+    const navigate = useNavigate(); // Kept for other navigations if needed, though Link is used for dashboard
+    const menuRef = useRef(null); // New ref
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     if (!user) return null;
 
     const handleLogout = () => {
+        setIsOpen(false); // Moved before logout
         logout();
-        setIsOpen(false);
     };
 
     return (
-        <div className="relative">
+        <div className="relative" ref={menuRef}> {/* Added ref */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center space-x-2 px-3 py-2 rounded-full hover:bg-gray-100 transition-colors"
+                className="flex items-center space-x-2 px-3 py-2 rounded-full hover:bg-gray-100 transition-colors focus:outline-none" // Updated classes
             >
                 <div className="w-8 h-8 rounded-full bg-gradient-to-r from-primary to-orange-500 flex items-center justify-center text-white font-medium">
                     {user.name?.charAt(0).toUpperCase() || 'U'}
@@ -29,6 +46,11 @@ const UserMenu = () => {
                     {user.name}
                 </span>
             </button>
+
+            <PreferencesModal // New component
+                isOpen={showPreferences}
+                onClose={() => setShowPreferences(false)}
+            />
 
             <AnimatePresence>
                 {isOpen && (
@@ -51,16 +73,14 @@ const UserMenu = () => {
                                 <p className="text-xs text-gray-500 truncate">{user.email}</p>
                             </div>
 
-                            <button
-                                onClick={() => {
-                                    setIsOpen(false);
-                                    navigate('/dashboard');
-                                }}
+                            <Link // Changed from button to Link
+                                to="/dashboard"
+                                onClick={() => setIsOpen(false)}
                                 className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
                             >
                                 <User size={16} />
                                 <span>My Recipes</span>
-                            </button>
+                            </Link>
 
                             <button
                                 onClick={() => {
