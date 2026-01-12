@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from Foodimg2Ing import app
+from Foodimg2Ing import app, limiter
 from Foodimg2Ing.output import output
 import os
 
@@ -8,6 +8,7 @@ def home():
     return jsonify({"status": "active", "message": "Recipe Generator API is running"})
 
 @app.route('/predict', methods=['POST'])
+@limiter.limit("5 per minute")  # Stricter limit for expensive AI endpoint
 def predict():
     if 'imagefile' not in request.files:
         return jsonify({'error': 'No file part'}), 400

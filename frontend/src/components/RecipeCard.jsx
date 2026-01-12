@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Printer, ArrowLeft } from 'lucide-react';
+import { Printer, ArrowLeft, Share2, Copy, Check } from 'lucide-react';
 
 const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview, onBack }) => {
     const [activeTab, setActiveTab] = useState(0);
+    const [showShareMenu, setShowShareMenu] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     // Ensure we have arrays
     const titles = Array.isArray(title) ? title : [title];
@@ -16,6 +18,43 @@ const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview, onBack
 
     const handlePrint = () => {
         window.print();
+    };
+
+    const handleShare = async (platform) => {
+        const shareText = `Check out this recipe: ${currentTitle}`;
+        const shareUrl = window.location.href;
+
+        switch (platform) {
+            case 'whatsapp':
+                window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`, '_blank');
+                break;
+            case 'twitter':
+                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+                break;
+            case 'copy':
+                try {
+                    await navigator.clipboard.writeText(shareUrl);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                } catch (err) {
+                    console.error('Failed to copy:', err);
+                }
+                break;
+            default:
+                // Web Share API for mobile
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: currentTitle,
+                            text: shareText,
+                            url: shareUrl
+                        });
+                    } catch (err) {
+                        console.error('Share failed:', err);
+                    }
+                }
+        }
+        setShowShareMenu(false);
     };
 
     return (
@@ -78,6 +117,40 @@ const RecipeCard = ({ title, ingredients = [], recipe = [], imagePreview, onBack
                                 >
                                     <Printer size={24} />
                                 </button>
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setShowShareMenu(!showShareMenu)}
+                                        className="p-2 text-gray-400 hover:text-primary transition-colors"
+                                        title="Share Recipe"
+                                    >
+                                        <Share2 size={24} />
+                                    </button>
+                                    {showShareMenu && (
+                                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
+                                            <button
+                                                onClick={() => handleShare('whatsapp')}
+                                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
+                                            >
+                                                <span>📱</span>
+                                                <span>Share on WhatsApp</span>
+                                            </button>
+                                            <button
+                                                onClick={() => handleShare('twitter')}
+                                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
+                                            >
+                                                <span>🐦</span>
+                                                <span>Share on Twitter</span>
+                                            </button>
+                                            <button
+                                                onClick={() => handleShare('copy')}
+                                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center space-x-2"
+                                            >
+                                                {copied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                                                <span>{copied ? 'Copied!' : 'Copy Link'}</span>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
 

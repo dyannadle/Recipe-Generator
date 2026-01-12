@@ -83,8 +83,36 @@ const ImageUpload = ({ onUpload, isLoading }) => {
                             <p className="text-lg font-medium text-primary">Drop the image here...</p>
                         ) : (
                             <>
-                                <p className="text-lg font-medium">Drag & drop a food image here, or click to select</p>
-                                <p className="text-sm text-gray-500 mt-2">Supports JPG, JPEG, PNG</p>
+                                <p className="text-lg font-medium">Drag & drop a food image here</p>
+                                <p className="text-sm text-gray-500 mt-2">or</p>
+                                <div className="flex flex-col sm:flex-row gap-3 mt-4 justify-center">
+                                    <label className="cursor-pointer">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => e.target.files[0] && onDrop([e.target.files[0]])}
+                                            className="hidden"
+                                            disabled={isLoading}
+                                        />
+                                        <span className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-red-500 transition-colors">
+                                            📁 Choose File
+                                        </span>
+                                    </label>
+                                    <label className="cursor-pointer sm:hidden">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            capture="environment"
+                                            onChange={(e) => e.target.files[0] && onDrop([e.target.files[0]])}
+                                            className="hidden"
+                                            disabled={isLoading}
+                                        />
+                                        <span className="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-teal-500 transition-colors">
+                                            📷 Take Photo
+                                        </span>
+                                    </label>
+                                </div>
+                                <p className="text-xs text-gray-400 mt-3">Supports JPG, JPEG, PNG</p>
                             </>
                         )}
                     </div>
