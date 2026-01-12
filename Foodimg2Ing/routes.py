@@ -7,8 +7,10 @@ import os
 def home():
     return jsonify({"status": "active", "message": "Recipe Generator API is running"})
 
+
+
 @app.route('/predict', methods=['POST'])
-@limiter.limit("5 per minute")  # Stricter limit for expensive AI endpoint
+@limiter.limit("5 per minute")
 def predict():
     if 'imagefile' not in request.files:
         return jsonify({'error': 'No file part'}), 400
@@ -17,14 +19,16 @@ def predict():
     if imagefile.filename == '':
         return jsonify({'error': 'No selected file'}), 400
 
-    image_path = None
     try:
         # Ensure demo_imgs directory exists
         upload_dir = os.path.join(app.root_path, 'static', 'demo_imgs')
         if not os.path.exists(upload_dir):
             os.makedirs(upload_dir)
             
-        image_path = os.path.join(upload_dir, imagefile.filename)
+        # Secure filename or use timestamp to avoid collisions
+        # For simplicity in this fix, we use the original filename but you might want to consider UUIDs
+        filename = imagefile.filename
+        image_path = os.path.join(upload_dir, filename)
         imagefile.save(image_path)
         
         user_title = request.form.get('title')
@@ -32,21 +36,19 @@ def predict():
 
         title, ingredients, recipe = output(image_path, user_title, user_ingredients)
         
+        # Construct URL for the image
+        # Assuming server runs on localhost:5000 for local dev
+        image_url = f"http://127.0.0.1:5000/static/demo_imgs/{filename}"
+
         return jsonify({
             'title': title,
             'ingredients': ingredients,
-            'recipe': recipe
+            'recipe': recipe,
+            'image_url': image_url 
         })
     except Exception as e:
         print(f"Error processing image: {e}")
         return jsonify({'error': str(e)}), 500
-    finally:
-        # Clean up the uploaded file to save space
-        if image_path and os.path.exists(image_path):
-            try:
-                os.remove(image_path)
-            except Exception as e:
-                print(f"Error removing temporary file: {e}")
 
 # Legacy route support if needed, or remove
 @app.route('/<samplefoodname>')

@@ -11,7 +11,7 @@
 
 import React, { useState } from 'react';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 

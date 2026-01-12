@@ -67,10 +67,12 @@ const Home = ({ scrollToUpload, uploadSectionRef }) => {
                 const resultData = {
                     title: data.title,
                     ingredients: data.ingredients,
-                    recipe: data.recipe
+                    recipe: data.recipe,
+                    imageUrl: data.image_url // Store the persistent URL
                 };
                 setResult(resultData);
-                saveToHistory(resultData, objectUrl);
+                // Use the persistent URL from backend for history, not the temporary blob
+                saveToHistory(resultData, data.image_url || objectUrl);
                 toast.success("Recipe generated successfully!");
             }
 
