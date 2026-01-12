@@ -43,7 +43,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
             <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
+                className="bg-white dark:bg-dark-surface rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden"
             >
                 {/* Header */}
                 <div className="bg-gradient-to-r from-primary to-orange-500 p-6 text-white relative">
@@ -67,16 +67,16 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     {mode === 'register' && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-dark-text mb-2">
                                 Name
                             </label>
                             <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
                                 <input
                                     type="text"
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-dark-bg dark:text-dark-text rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                                     placeholder="Your name"
                                     required={mode === 'register'}
                                 />
@@ -85,16 +85,16 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
                     )}
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-dark-text mb-2">
                             Email
                         </label>
                         <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
                             <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-dark-bg dark:text-dark-text rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                                 placeholder="you@example.com"
                                 required
                             />
@@ -102,23 +102,23 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-dark-text mb-2">
                             Password
                         </label>
                         <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={20} />
                             <input
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-dark-bg dark:text-dark-text rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                                 placeholder="••••••••"
                                 required
                                 minLength={6}
                             />
                         </div>
                         {mode === 'register' && (
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 At least 6 characters
                             </p>
                         )}

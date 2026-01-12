@@ -6,6 +6,7 @@ import About from './components/About';
 import Dashboard from './components/Dashboard/Dashboard';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
   const uploadSectionRef = useRef(null);
@@ -15,35 +16,37 @@ function App() {
   };
 
   return (
-    <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-          <Toaster position="top-center" />
-          <Navbar />
-          <div className="flex-grow">
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  <Home
-                    scrollToUpload={scrollToUpload}
-                    uploadSectionRef={uploadSectionRef}
-                  />
-                }
-              />
-              <Route path="/about" element={<About />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-            </Routes>
-          </div>
-
-          <footer className="bg-white border-t border-gray-100 py-12 mt-auto">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
-              <p>&copy; {new Date().getFullYear()} SnapCook AI. All rights reserved.</p>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50 dark:bg-dark-bg flex flex-col transition-colors duration-200">
+            <Toaster position="top-center" />
+            <Navbar />
+            <div className="flex-grow">
+              <Routes>
+                <Route
+                  path="/"
+                  element={
+                    <Home
+                      scrollToUpload={scrollToUpload}
+                      uploadSectionRef={uploadSectionRef}
+                    />
+                  }
+                />
+                <Route path="/about" element={<About />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+              </Routes>
             </div>
-          </footer>
-        </div>
-      </Router>
-    </AuthProvider>
+
+            <footer className="bg-white dark:bg-dark-surface border-t border-gray-100 dark:border-dark-border py-12 mt-auto transition-colors duration-200">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 dark:text-dark-text-secondary text-sm">
+                <p>&copy; {new Date().getFullYear()} SnapCook AI. All rights reserved.</p>
+              </div>
+            </footer>
+          </div>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
