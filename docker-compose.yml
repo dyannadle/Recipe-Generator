@@ -1,12 +1,35 @@
+# PURPOSE: Specify the version of the Compose file format.
+# WHY: Determines which features are available (e.g., volume labels, secret management).
+# IMPACT: Ensures compatibility with the Docker Compose CLI version.
 version: '3.8'
 
+# PURPOSE: Define the collection of containers that make up our application.
+# WHY: Allows managing multiple related services as a single stack.
+# IMPACT: Essential for orchestration.
 services:
+  # PURPOSE: Define the backend application service.
+  # WHY: Names the service for internal logging and inter-container networking.
   recipe-app:
+    # PURPOSE: Specify how to build the container image.
+    # WHY: '.' tells Docker to look for a 'Dockerfile' in the current directory.
+    # IMPACT: Connects the orchestration layer to the build instructions.
     build: .
+    # PURPOSE: Map the container's internal port to the host machine.
+    # WHY: Allows users to visit 'http://localhost:8000' on their computer to reach port 7860 inside the container.
+    # IMPACT: The gateway for external traffic.
     ports:
       - "8000:7860"
+    # PURPOSE: Mount a local directory into the container.
+    # WHY: Persists data (like SQLite databases or uploaded images) on the host machine so it isn't lost when the container stops.
+    # IMPACT: Ensures data durability.
     volumes:
       - ./Foodimg2Ing/data:/app/Foodimg2Ing/data
+    # PURPOSE: Inject configuration variables into the runtime environment.
+    # WHY: Lets the app know it's running in production mode, changing behavior like error logging.
+    # IMPACT: Controls app behavior without code changes.
     environment:
       - FLASK_ENV=production
+    # PURPOSE: Define the auto-restart policy.
+    # WHY: 'unless-stopped' ensures the app starts automatically if the server reboots, unless a developer manually stopped it.
+    # IMPACT: Increases site uptime and reliability.
     restart: unless-stopped

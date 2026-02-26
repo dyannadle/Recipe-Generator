@@ -1,126 +1,129 @@
+# PURPOSE: Documentation header clarifying the scope of this module.
+# WHY: Helps developers quickly identify that this file contains the logic for creating and viewing recipes.
+# IMPACT: Improves codebase navigability.
 """
 Recipe Management Routes
 This file handles all recipe-related operations: saving, retrieving, deleting, and favoriting recipes.
 """
 
+# PURPOSE: Import Flask utilities for handling JSON data and incoming requests.
+# WHY: 'jsonify' creates JSON responses; 'request' accesses POST data/URL args.
+# ALTERNATIVE: Use raw 'Response' objects, but 'jsonify' sets the correct 'application/json' MIME type automatically.
+# IMPACT: Allows the API to communicate with the React frontend.
 from flask import jsonify, request
+
+# PURPOSE: Import the Flask app and rate limiter from the central package.
+# WHY: '@app.route' registers endpoints; '@limiter' prevents API abuse like automated recipe scraping.
+# IMPACT: Integrates this module with the application's routing and security layers.
 from Foodimg2Ing import app, limiter
+
+# PURPOSE: Import data models for database operations.
+# WHY: 'db' is the database session; 'Recipe', 'Favorite', 'Rating' are the tables we interact with.
+# IMPACT: Enables CRUD (Create, Read, Update, Delete) operations on recipe data.
 from Foodimg2Ing.models import db, Recipe, Favorite, Rating
+
+# PURPOSE: Import security decorators.
+# WHY: 'token_required' forces a login; 'optional_token' allows public view but identifies the user if they're logged in.
+# ALTERNATIVE: Manual JWT checking inside functions, but decorators are much DRYer (Don't Repeat Yourself).
+# IMPACT: Protects user data and enables personalized features (like 'favoriting').
 from Foodimg2Ing.utils.security import token_required, optional_token
+
+# PURPOSE: Import SQLAlchemy sorting helper.
+# WHY: 'desc' is used to show the most recent recipes first.
+# IMPACT: Directly affects the UI layout and sorting logic.
 from sqlalchemy import desc
 
 # ============================================================================
 # SAVE RECIPE ENDPOINT
 # ============================================================================
+# PURPOSE: Route to save a generated recipe to the user's account.
+# WHY: Users want to keep recipes they like for future reference.
+# IMPACT: Creates a permanent record in the 'recipes' table.
 @app.route('/api/recipes/save', methods=['POST'])
-@token_required  # This decorator ensures user is authenticated
-@limiter.limit("20 per hour")  # Prevent spam - max 20 recipe saves per hour
+# PURPOSE: Enforce authentication.
+# WHY: You can't save a recipe to a specific account if the user isn't identified.
+@token_required  
+# PURPOSE: Limit recipe saving to 20 per hour.
+# WHY: Prevents a malicious user or bot from bloating the database with millions of fake recipes.
+# IMPACT: Protects server resources and database storage.
+@limiter.limit("20 per hour")  
 def save_recipe(user):
     """
     Save a generated recipe to the database
-    
-    How it works:
-    1. Extract recipe data from request (title, ingredients, instructions, image)
-    2. Validate required fields are present
-    3. Create new Recipe object linked to current user
-    4. Save to database
-    5. Return saved recipe with ID
-    
-    Args:
-        user: Current authenticated user (injected by @token_required decorator)
-    
-    Returns:
-        JSON with saved recipe data and success message
     """
     
-    # Get JSON data from request body
+    # PURPOSE: Extract the JSON payload from the request.
+    # WHY: The frontend sends recipe data (title, ingredients) in the body of a POST.
     data = request.get_json()
     
-    # Validate that we have the minimum required fields
-    # We need at least a title and ingredients to save a recipe
+    # PURPOSE: Validate input data.
+    # WHY: Prevents 'None' errors or empty recipes from being saved.
+    # IMPACT: Ensures database integrity.
     if not data or not data.get('title') or not data.get('ingredients'):
         return jsonify({'error': 'Title and ingredients are required'}), 400
     
     try:
-        # Create a new Recipe instance
-        # This creates a Python object that represents a database row
+        # PURPOSE: Create a new Recipe model instance.
+        # WHY: To prepare the user-provided data for database insertion.
+        # IMPACT: Maps the request data to the SQL schema.
         recipe = Recipe(
-            user_id=user.id,  # Link recipe to current user
-            title=data['title'].strip(),  # Remove extra whitespace
-            ingredients=data['ingredients'],  # List of ingredients (stored as JSON)
-            instructions=data.get('instructions', []),  # List of steps (default to empty list)
-            image_url=data.get('image_url'),  # Optional image URL
-            is_public=data.get('is_public', False)  # Default to private
+            user_id=user.id,  # LINK: Connects this recipe to the specific logged-in user.
+            title=data['title'].strip(),  # CLEAN: Removes accidental leading/trailing spaces.
+            ingredients=data['ingredients'],  # DATA: List of ingredients.
+            instructions=data.get('instructions', []),  # OPTIONAL: Default to empty if none provided.
+            image_url=data.get('image_url'),  # MEDIA: Path to the generated food image.
+            is_public=data.get('is_public', False)  # PRIVACY: Default to private unless specified.
         )
         
-        # Add the recipe to the database session
-        # This stages the recipe for insertion but doesn't commit yet
+        # PURPOSE: Stage the new object for addition.
         db.session.add(recipe)
         
-        # Commit the transaction to actually save to database
-        # This makes the changes permanent and generates the recipe.id
+        # PURPOSE: Commit the session to disk.
+        # WHY: Database changes aren't permanent until committed.
+        # IMPACT: Makes the recipe available for future retrieval.
         db.session.commit()
         
-        # Return success response with the saved recipe
-        # The to_dict() method converts the Recipe object to a JSON-friendly dictionary
+        # PURPOSE: Return the newly created recipe as JSON.
+        # WHY: Frontend needs the generated ID (recipe.id) to navigate to the new recipe page.
+        # IMPACT: Seamless transition from 'generating' to 'viewing saved'.
         return jsonify({
             'message': 'Recipe saved successfully',
             'recipe': recipe.to_dict()
-        }), 201  # 201 = Created
+        }), 201  # HTTP 201: Created.
     
     except Exception as e:
-        # If anything goes wrong, rollback the transaction
-        # This ensures database consistency
+        # PURPOSE: Rollback if an error occurs during commit.
+        # WHY: Prevents partial writes or locked database states.
         db.session.rollback()
-        
-        # Log the error for debugging
         print(f"Error saving recipe: {e}")
-        
-        # Return generic error to user (don't expose internal details)
         return jsonify({'error': 'Failed to save recipe'}), 500
 
 
 # ============================================================================
 # GET USER'S RECIPES ENDPOINT
 # ============================================================================
+# PURPOSE: Fetch all recipes created by the current user.
+# WHY: To populate the 'My Recipes' page in the dashboard.
+# IMPACT: Shows the user their personal history of saved cooking ideas.
 @app.route('/api/recipes/my-recipes', methods=['GET'])
-@token_required  # Only authenticated users can view their recipes
+@token_required  
 def get_my_recipes(user):
-    """
-    Retrieve all recipes belonging to the current user
-    
-    How it works:
-    1. Query database for all recipes where user_id matches current user
-    2. Order by creation date (newest first)
-    3. Convert each recipe to dictionary format
-    4. Return as JSON array
-    
-    Args:
-        user: Current authenticated user
-    
-    Returns:
-        JSON array of user's recipes
-    """
-    
     try:
-        # Query the database for recipes
-        # Recipe.query creates a query builder
-        # .filter_by(user_id=user.id) adds WHERE clause
-        # .order_by(desc(Recipe.created_at)) sorts newest first
-        # .all() executes query and returns list of Recipe objects
+        # PURPOSE: Query the database for recipes owned by this user.
+        # WHY: We must filter by user_id so users don't see each other's private data.
+        # IMPACT: Data privacy and multi-tenancy.
         recipes = Recipe.query.filter_by(user_id=user.id)\
                               .order_by(desc(Recipe.created_at))\
                               .all()
         
-        # Convert each Recipe object to a dictionary
-        # List comprehension: [recipe.to_dict() for recipe in recipes]
-        # This transforms: [Recipe1, Recipe2] -> [{...}, {...}]
+        # PURPOSE: Convert list of objects to serializable dictionaries.
+        # WHY: Recipe objects aren't directly JSON-serializable.
+        # IMPACT: Prepares the data for HTTP transmission.
         recipes_data = [recipe.to_dict() for recipe in recipes]
         
-        # Return the recipes array
         return jsonify({
             'recipes': recipes_data,
-            'count': len(recipes_data)  # Include count for convenience
+            'count': len(recipes_data)  # CONVENIENCE: Useful for UI 'Total: 5' badges.
         }), 200
     
     except Exception as e:
@@ -131,40 +134,32 @@ def get_my_recipes(user):
 # ============================================================================
 # GET SINGLE RECIPE ENDPOINT
 # ============================================================================
+# PURPOSE: Fetch a specific recipe by ID.
+# WHY: For the detailed view page where a user reads instructions.
+# IMPACT: Primary viewing path for individual recipes.
 @app.route('/api/recipes/<int:recipe_id>', methods=['GET'])
-@optional_token  # Recipe can be viewed by anyone if public, or owner if private
+# PURPOSE: Use optional token.
+# WHY: Allows public recipes to be shared via link with non-logged-in users.
+@optional_token  
 def get_recipe(user, recipe_id):
-    """
-    Get a specific recipe by ID
-    
-    How it works:
-    1. Find recipe in database by ID
-    2. Check if user has permission to view (owner or public)
-    3. Return recipe data
-    
-    Args:
-        user: Current user (None if not authenticated)
-        recipe_id: ID of recipe to retrieve
-    
-    Returns:
-        JSON with recipe data
-    """
-    
-    # Find recipe by ID
-    # db.session.get(Model, id) is the SQLAlchemy 2.0 way to get by primary key
+    # PURPOSE: Fetch recipe by primary key.
+    # WHY: Standard retrieval.
     recipe = db.session.get(Recipe, recipe_id)
     
-    # Check if recipe exists
+    # PURPOSE: Handle missing recipes.
+    # WHY: Prevents null pointer errors.
     if not recipe:
         return jsonify({'error': 'Recipe not found'}), 404
     
-    # Check permissions
-    # User can view if: they own it OR it's public
+    # PURPOSE: Security check for private recipes.
+    # WHY: If a recipe is not marked public, ONLY the owner should see it.
+    # IMPACT: Prevents unauthorized snooping via URL guessing.
     is_owner = user and recipe.user_id == user.id
     if not is_owner and not recipe.is_public:
         return jsonify({'error': 'Access denied'}), 403
     
-    # Return recipe with user info included
+    # PURPOSE: Return recipe data.
+    # WHY: 'include_user=True' shows the creator's username on the page.
     return jsonify({
         'recipe': recipe.to_dict(include_user=True)
     }), 200
@@ -173,44 +168,27 @@ def get_recipe(user, recipe_id):
 # ============================================================================
 # DELETE RECIPE ENDPOINT
 # ============================================================================
+# PURPOSE: Remove a recipe from the database.
+# WHY: Users want to delete old or unwanted recipes.
+# IMPACT: Permanently removes data from storage.
 @app.route('/api/recipes/<int:recipe_id>', methods=['DELETE'])
-@token_required  # Only authenticated users can delete
+@token_required  
 def delete_recipe(user, recipe_id):
-    """
-    Delete a recipe (only owner can delete)
-    
-    How it works:
-    1. Find recipe by ID
-    2. Verify user owns the recipe
-    3. Delete from database
-    4. Return success message
-    
-    Args:
-        user: Current authenticated user
-        recipe_id: ID of recipe to delete
-    
-    Returns:
-        JSON success message
-    """
-    
-    # Find the recipe
     recipe = db.session.get(Recipe, recipe_id)
     
-    # Check if exists
     if not recipe:
         return jsonify({'error': 'Recipe not found'}), 404
     
-    # Verify ownership
-    # Only the user who created the recipe can delete it
+    # PURPOSE: Verify ownership before deletion.
+    # WHY: Crucial security! Only the owner can delete their own records.
+    # IMPACT: Prevents malicious data loss.
     if recipe.user_id != user.id:
         return jsonify({'error': 'You can only delete your own recipes'}), 403
     
     try:
-        # Delete the recipe
-        # This will also delete related ratings and favorites due to cascade
+        # PURPOSE: Remove the record.
+        # WHY: Database cleanup.
         db.session.delete(recipe)
-        
-        # Commit the deletion
         db.session.commit()
         
         return jsonify({'message': 'Recipe deleted successfully'}), 200
@@ -224,48 +202,32 @@ def delete_recipe(user, recipe_id):
 # ============================================================================
 # FAVORITE/UNFAVORITE RECIPE ENDPOINT
 # ============================================================================
+# PURPOSE: Toggle a recipe as a favorite.
+# WHY: A secondary way to 'Save' shared/public recipes to a dedicated list.
 @app.route('/api/recipes/<int:recipe_id>/favorite', methods=['POST', 'DELETE'])
-@token_required  # Only authenticated users can favorite
+@token_required  
 def toggle_favorite(user, recipe_id):
-    """
-    Add or remove a recipe from favorites
-    
-    How it works:
-    - POST: Add to favorites
-    - DELETE: Remove from favorites
-    
-    Args:
-        user: Current authenticated user
-        recipe_id: ID of recipe to favorite/unfavorite
-    
-    Returns:
-        JSON with success message and favorite status
-    """
-    
-    # Verify recipe exists
     recipe = db.session.get(Recipe, recipe_id)
     if not recipe:
         return jsonify({'error': 'Recipe not found'}), 404
     
-    # Check if already favorited
-    # Query for existing favorite with this user_id and recipe_id
+    # PURPOSE: Check if a favorite already exists for this pair.
+    # WHY: Logic depends on whether we are adding or removing.
     existing_favorite = Favorite.query.filter_by(
         user_id=user.id,
         recipe_id=recipe_id
-    ).first()  # .first() returns None if not found
+    ).first()  
     
     try:
         if request.method == 'POST':
-            # ADD TO FAVORITES
-            
-            # Check if already favorited
+            # PURPOSE: Handle 'Add Favorite'.
             if existing_favorite:
                 return jsonify({
                     'message': 'Recipe already in favorites',
                     'is_favorited': True
                 }), 200
             
-            # Create new favorite
+            # PURPOSE: Create link between User and Recipe.
             favorite = Favorite(
                 user_id=user.id,
                 recipe_id=recipe_id
@@ -280,16 +242,13 @@ def toggle_favorite(user, recipe_id):
             }), 201
         
         else:  # DELETE method
-            # REMOVE FROM FAVORITES
-            
-            # Check if favorited
+            # PURPOSE: Handle 'Remove Favorite'.
             if not existing_favorite:
                 return jsonify({
                     'message': 'Recipe not in favorites',
                     'is_favorited': False
                 }), 200
             
-            # Delete the favorite
             db.session.delete(existing_favorite)
             db.session.commit()
             
@@ -307,33 +266,20 @@ def toggle_favorite(user, recipe_id):
 # ============================================================================
 # GET USER'S FAVORITES ENDPOINT
 # ============================================================================
+# PURPOSE: Fetch all recipes marked as favorites by the user.
+# WHY: To populate the 'Favorites' tab on the site.
 @app.route('/api/recipes/favorites', methods=['GET'])
 @token_required
 def get_favorites(user):
-    """
-    Get all recipes favorited by the current user
-    
-    How it works:
-    1. Query Favorite table for user's favorites
-    2. Join with Recipe table to get recipe details
-    3. Return array of favorited recipes
-    
-    Args:
-        user: Current authenticated user
-    
-    Returns:
-        JSON array of favorited recipes
-    """
-    
     try:
-        # Query favorites for this user
-        # Order by when they were favorited (newest first)
+        # PURPOSE: Lookup user's favorite records.
+        # IMPACT: Gathers the IDs of all favorited recipes.
         favorites = Favorite.query.filter_by(user_id=user.id)\
                                   .order_by(desc(Favorite.created_at))\
                                   .all()
         
-        # Convert to dictionaries
-        # Each favorite.to_dict() includes the full recipe data
+        # PURPOSE: Return full recipe data for each favorite.
+        # WHY: UI needs more than just the IDs to display a list.
         favorites_data = [favorite.to_dict() for favorite in favorites]
         
         return jsonify({
@@ -348,31 +294,29 @@ def get_favorites(user):
 # ============================================================================
 # GET RECIPE NUTRITION ENDPOINT
 # ============================================================================
+# PURPOSE: Lazy import the nutrition estimator.
+# WHY: Keeps the main module imports faster (avoids loading heavy LLM or regex logic until needed).
+# ALTERNATIVE: Import at the top of the file (standard practice, but slow for CLI ops).
 from Foodimg2Ing.nutrition import estimate_nutrition
 
+# PURPOSE: Get nutrition for a saved recipe.
+# WHY: Users want to know calories/macros for the food they plan to cook.
+# IMPACT: Adds nutritional value to the recipe view.
 @app.route('/api/recipes/<int:recipe_id>/nutrition', methods=['GET'])
 @optional_token
 def get_recipe_nutrition(user, recipe_id):
-    """
-    Get nutritional information for a specific recipe
-    
-    How it works:
-    1. Find recipe by ID
-    2. Extract ingredients
-    3. Calculate nutrition using heuristic
-    4. Return nutrition data
-    """
-    
     recipe = db.session.get(Recipe, recipe_id)
     if not recipe:
         return jsonify({'error': 'Recipe not found'}), 404
         
-    # Check permissions (same as get_recipe)
+    # AUTH: Check permission before showing nutrition for private recipes.
     is_owner = user and recipe.user_id == user.id
     if not is_owner and not recipe.is_public:
         return jsonify({'error': 'Access denied'}), 403
         
     try:
+        # PURPOSE: Pass ingredients to the estimation engine.
+        # IMPACT: Calculates estimated calories/protein/carbs based on ingredient strings.
         nutrition = estimate_nutrition(recipe.ingredients)
         return jsonify({
             'nutrition': nutrition
@@ -381,13 +325,13 @@ def get_recipe_nutrition(user, recipe_id):
         print(f"Error calculating nutrition: {e}")
         return jsonify({'error': 'Failed to calculate nutrition'}), 500
 
+# PURPOSE: Estimate nutrition for unsaved text.
+# WHY: Allows users to see nutrition data BEFORE they decide to save a generated recipe.
+# IMPACT: Improves the 'Preview' experience.
 @app.route('/api/nutrition/estimate', methods=['POST'])
 @optional_token
 def estimate_nutrition_adhoc(user):
-    """
-    Estimate nutrition for an arbitrary list of ingredients
-    Useful for unsaved generated recipes
-    """
+    # PURPOSE: Parse temporary ingredients list.
     data = request.get_json()
     if not data or 'ingredients' not in data:
         return jsonify({'error': 'Ingredients list required'}), 400
