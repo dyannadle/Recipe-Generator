@@ -27,6 +27,9 @@ const Navbar = () => {
                         <div className="flex items-center space-x-4">
                             <Link to="/" className="hover:text-primary dark:text-dark-text dark:hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</Link>
                             <Link to="/about" className="hover:text-primary dark:text-dark-text dark:hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">About</Link>
+                            {isAuthenticated && (
+                                <Link to="/create-recipe" className="hover:text-primary dark:text-dark-text dark:hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors font-semibold text-orange-500">Create Recipe</Link>
+                            )}
 
                             <ThemeToggle />
 

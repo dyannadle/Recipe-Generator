@@ -11,6 +11,9 @@ This file handles all recipe-related operations: saving, retrieving, deleting, a
 # ALTERNATIVE: Use raw 'Response' objects, but 'jsonify' sets the correct 'application/json' MIME type automatically.
 # IMPACT: Allows the API to communicate with the React frontend.
 from flask import jsonify, request
+import os
+import json
+from werkzeug.utils import secure_filename
 
 # PURPOSE: Import the Flask app and rate limiter from the central package.
 # WHY: '@app.route' registers endpoints; '@limiter' prevents API abuse like automated recipe scraping.
@@ -97,6 +100,83 @@ def save_recipe(user):
         db.session.rollback()
         print(f"Error saving recipe: {e}")
         return jsonify({'error': 'Failed to save recipe'}), 500
+
+
+# ============================================================================
+# CREATE MANUAL RECIPE ENDPOINT
+# ============================================================================
+# PURPOSE: Allow users to manually upload their own recipes with unique images.
+# WHY: Not all recipes come from AI; users want to store their personal traditional recipes too.
+# IMPACT: Expands the platform from a "Generator" to a full "Recipe Keeper".
+@app.route('/api/recipes/create', methods=['POST'])
+@token_required
+@limiter.limit("10 per hour")
+def create_manual_recipe(user):
+    """
+    Manually create a recipe with an uploaded image
+    """
+    
+    # PURPOSE: Check for mandatory text fields in the form data.
+    # WHY: We use request.form instead of request.get_json() because this is a multipart request.
+    title = request.form.get('title')
+    ingredients_raw = request.form.get('ingredients') # Expecting JSON string
+    instructions_raw = request.form.get('instructions') # Expecting JSON string
+    
+    if not title or not ingredients_raw:
+        return jsonify({'error': 'Title and ingredients are required'}), 400
+        
+    try:
+        # PURPOSE: Parse JSON strings from form fields.
+        # WHY: Frontend sends arrays as JSON strings in multipart requests.
+        ingredients = json.loads(ingredients_raw)
+        instructions = json.loads(instructions_raw) if instructions_raw else []
+        
+        image_url = None
+        
+        # PURPOSE: Handle optional image upload.
+        # WHY: Users might want to upload a photo of their dish.
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename != '':
+                # PURPOSE: Secure the filename to prevent directory traversal attacks.
+                filename = secure_filename(file.filename)
+                
+                # PURPOSE: Ensure the upload directory exists.
+                upload_dir = os.path.join(app.root_path, 'static', 'uploads', 'recipes')
+                if not os.path.exists(upload_dir):
+                    os.makedirs(upload_dir)
+                
+                # PURPOSE: Save the file.
+                file_path = os.path.join(upload_dir, filename)
+                file.save(file_path)
+                
+                # PURPOSE: Generate the URL for the frontend.
+                image_url = f"/static/uploads/recipes/{filename}"
+
+        # PURPOSE: Save the new recipe to the database.
+        recipe = Recipe(
+            user_id=user.id,
+            title=title.strip(),
+            ingredients=ingredients,
+            instructions=instructions,
+            image_url=image_url,
+            is_public=request.form.get('is_public', 'false').lower() == 'true'
+        )
+        
+        db.session.add(recipe)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Manual recipe created successfully',
+            'recipe': recipe.to_dict()
+        }), 201
+        
+    except json.JSONDecodeError:
+        return jsonify({'error': 'Invalid format for ingredients or instructions'}), 400
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error creating manual recipe: {e}")
+        return jsonify({'error': 'Failed to create recipe'}), 500
 
 
 # ============================================================================

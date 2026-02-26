@@ -17,6 +17,7 @@ import About from './components/About';
 import Dashboard from './components/Dashboard/Dashboard';
 import RecipeDetail from './components/RecipeDetail';
 import ShoppingList from './components/ShoppingList';
+import CreateRecipe from './components/CreateRecipe';
 
 // PURPOSE: Import the Toaster component for global notifications.
 // WHY: Allows any component to trigger a pop-up alert (toast).
@@ -89,6 +90,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/recipe/:id" element={<RecipeDetail />} />
                 <Route path="/shopping-list" element={<ShoppingList />} />
+                <Route path="/create-recipe" element={<CreateRecipe />} />
               </Routes>
             </div>
 
