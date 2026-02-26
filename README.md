@@ -79,6 +79,7 @@ npm run dev
 ```
 
 ## 📚 Documentation
+- [Future Enhancement Roadmap 🚀](./documents/FUTURE_ENHANCEMENTS.md)
 - [Recommended Free Deployment (Hugging Face)](./documents/FREE_DEPLOYMENT_GUIDE.md)
 - [Complete General Deployment Guide](./documents/DEPLOYMENT.md)
 - [Backend Documentation](./Foodimg2Ing/README.md)
