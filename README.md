@@ -46,9 +46,42 @@ docker-compose up -d
 ```
 Access the app at `http://localhost:8000`.
 
-## 📖 Detailed Guides
+## 📖 How to Use
+
+1.  **Upload**: Select or drag-and-drop an image of a prepared dish into the scanner.
+2.  **Generate**: Click "Predict" and wait for the AI to transcribe the image into a recipe.
+3.  **Refine**: (Optional) Use the manually override fields if you want to tweak the title or ingredients.
+4.  **Save & Shop**: Click "Save Recipe" to add it to your dashboard, or "Add to Shopping List" to sync ingredients to your checklist.
+
+## ⚙️ Installation & Setup
+
+### Option 1: Docker (Fastest)
+```bash
+docker-compose up --build
+```
+
+### Option 2: Manual Setup (Development)
+
+**1. Backend (Flask)**
+```bash
+cd Foodimg2Ing
+python -m venv venv
+source venv/bin/scripts/activate  # Windows: venv\Scripts\activate
+pip install -r ../requirements.txt
+python ../run.py
+```
+
+**2. Frontend (React)**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## 📚 Documentation
 - [Deployment Guide](./documents/DEPLOYMENT.md)
 - [Backend Documentation](./Foodimg2Ing/README.md)
+- [Annotated Codebase Walkthrough](file:///C:/Users/Deepak%20Yannadle/.gemini/antigravity/brain/c602dfd9-c675-44d0-838d-8e04f2e9fd43/walkthrough.md)
 
 ## 📄 License
 MIT License - See [LICENSE](LICENSE) for details.
