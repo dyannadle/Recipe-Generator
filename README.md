@@ -79,7 +79,8 @@ npm run dev
 ```
 
 ## 📚 Documentation
-- [Deployment Guide](./documents/DEPLOYMENT.md)
+- [Recommended Free Deployment (Hugging Face)](./documents/FREE_DEPLOYMENT_GUIDE.md)
+- [Complete General Deployment Guide](./documents/DEPLOYMENT.md)
 - [Backend Documentation](./Foodimg2Ing/README.md)
 - [Annotated Codebase Walkthrough](file:///C:/Users/Deepak%20Yannadle/.gemini/antigravity/brain/c602dfd9-c675-44d0-838d-8e04f2e9fd43/walkthrough.md)
 
