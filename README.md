@@ -1,5 +1,5 @@
 ---
-title: Recipe Generator
+title: SnapCook AI - Recipe Generator
 emoji: 🍳
 colorFrom: red
 colorTo: orange
@@ -7,35 +7,49 @@ sdk: docker
 pinned: false
 ---
 
-# Recipe Generator 🍳
+# SnapCook AI: Food Image to Recipe Generator 🍳
 
-AI-powered recipe generation from food images using deep learning.
+![Banner](banner.png)
 
-## Features
+**Transform your food photos into culinary masterpieces.** SnapCook uses state-of-the-art Transformer models to identify ingredients and generate step-by-step instructions instantly.
 
-- 📸 Upload food images
-- 🤖 AI-generated recipes with ingredients and instructions
-- 🎨 Modern, responsive UI
-- 💾 Recipe history tracking
+## 🚀 Key Features
 
-## How to Use
+- 📸 **AI Image Recognition**: Upload any food photo and get an instant recipe.
+- 🥗 **Nutritional Estimation**: Get calorie counts and macro-nutrients automatically.
+- 🛒 **Smart Shopping List**: Save ingredients directly into an integrated checklist.
+- 🔐 **Secure Accounts**: JWT-powered authentication to save your favorite recipes.
+- 🌓 **Premium UI**: Sleek, modern design with full Dark Mode support and smooth micro-animations.
+- 🐳 **Docker Ready**: Fully containerized for easy deployment to Hugging Face Spaces or VPS.
 
-1. Upload a clear image of food
-2. Wait for AI processing (~10-30 seconds)
-3. View generated recipe with ingredients and step-by-step instructions
+## 🛠️ Technology Stack
 
-## Technology Stack
+| Component | Technology |
+|-----------|------------|
+| **Frontend** | React 18, Vite, Tailwind CSS, Lucide Icons |
+| **Backend** | Flask (Python), SQLAlchemy ORM, Flask-Limiter |
+| **Authentication** | JWT (JSON Web Tokens) |
+| **AI/ML Engine** | PyTorch, Transformer Models (ckpt) |
+| **Infrastructure** | Docker, Docker Compose, Hugging Face Spaces |
 
-- **Backend**: Flask + PyTorch
-- **Frontend**: React + Vite + Tailwind CSS
-- **Model**: Transformer-based recipe generation
+## 🚦 Quick Start
 
-## Deployment
+### 1. Prerequisites
+- Docker (for easy setup) OR Python 3.9+ and Node.js 18+
 
-This app is deployed using Docker on Hugging Face Spaces.
+### 2. Environment Setup
+Rename `.env.example` to `.env` and fill in your secrets.
 
-For detailed deployment instructions, see [DEPLOYMENT.md](./documents/DEPLOYMENT.md).
+### 3. Run with Docker (Recommended)
+```bash
+docker-compose up -d
+```
+Access the app at `http://localhost:8000`.
 
-## License
+## 📖 Detailed Guides
+- [Deployment Guide](./documents/DEPLOYMENT.md)
+- [Backend Documentation](./Foodimg2Ing/README.md)
 
-MIT License
+## 📄 License
+MIT License - See [LICENSE](LICENSE) for details.
+
